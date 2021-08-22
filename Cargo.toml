@@ -1,5 +1,5 @@
 [package]
-name = "vscode-nvim-colorscheme-converter"
+name = "converter"
 version = "0.1.0"
 authors = ["Vinícius Müller <vinigm.nho@gmail.com>"]
 edition = "2018"
