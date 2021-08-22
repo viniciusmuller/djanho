@@ -24,9 +24,12 @@ pub fn combined_options() -> Vec<CombinedOption> {
             "editorLineNumber.foreground",
             "editorLineNumber.background",
         ),
+        mk_combined("SignColumn", "VIM_NONE", "editor.background"),
+        mk_combined("Normal", "editor.foreground", "editor.background"),
         mk_combined("Visual", "VIM_NONE", "editor.selectionBackground"),
-        // TODO: What to do with RGBA colors? Maybe and algorithm to blend colors?
-        // "editor.selectionHighlightBackground": "#fabd2f40",
+        // mk_combined("CursorLine", "VIM_NONE", "editor.selectionBackground"),
+        mk_combined("ColorColumn", "VIM_NONE", "editor.selectionBackground"),
+        mk_combined("TabLineSel", "tab.activeBackground", "tab.activeForeground"),
     ]
 }
 
@@ -43,15 +46,21 @@ pub fn mk_group(group: &str) -> Option<String> {
 }
 
 pub fn highlight(options: Highlight) -> String {
-    let gui = if options.text_style.is_empty() {
+    format!(
+        "highlight {}{}{}{}\n",
+        options.group,
+        mk_option("guibg", options.background),
+        mk_option("guifg", options.foreground),
+        mk_option("gui", options.text_style)
+    )
+}
+
+fn mk_option(option_type: &str, value: String) -> String {
+    if value.is_empty() {
         String::new()
     } else {
-        format!(" gui={}", options.text_style)
-    };
-    format!(
-        "highlight {} guibg={} guifg={}{}\n",
-        options.group, options.background, options.foreground, gui
-    )
+        format!(" {}={}", option_type, value)
+    }
 }
 
 #[derive(Debug)]

@@ -3,7 +3,7 @@ use std::io::Write;
 
 use clap::{App, Arg};
 
-use converter::{decoder, generators};
+use converter::{colors, decoder, generators};
 
 fn main() {
     let matches = App::new("VSCode->Vim Colorscheme Converter")
@@ -29,9 +29,7 @@ fn main() {
     let output_path = matches.value_of("OUTPUT").unwrap_or("generated.vim");
     let theme = decoder::parse_file(filepath.to_string());
     let generated = generators::generate_vimscript_config(theme);
-    // println!("{:?}", colors::from_hex_string("#411243"));
-    // println!("{:?}", colors::from_hex_string("#429"));
-    // println!("{:?}", colors::from_hex_string("#411243a1"));
+
     let mut f = File::create(output_path).expect("Unable to create file");
     f.write_all(generated.as_bytes())
         .expect("Unable to write the generated config")

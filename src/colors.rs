@@ -1,23 +1,25 @@
-pub fn from_hex_string(hex: &str) -> RGBEither {
+pub fn from_hex_string(hex: &str) -> Result<RGBA, String> {
     // TODO: Maybe handle 4 characters RGBA strings? Don't really know if they exist..
     match hex.len() {
-        4 => RGBEither::RGB {
-            r: hex_to_u8(&hex[1..2]),
-            g: hex_to_u8(&hex[2..3]),
-            b: hex_to_u8(&hex[3..4]),
-        },
-        7 => RGBEither::RGB {
+        4 => Ok(RGBA {
+            r: hex_to_u8(&hex[1..2].repeat(2)),
+            g: hex_to_u8(&hex[2..3].repeat(2)),
+            b: hex_to_u8(&hex[3..4].repeat(2)),
+            a: 1.0,
+        }),
+        7 => Ok(RGBA {
             r: hex_to_u8(&hex[1..3]),
             g: hex_to_u8(&hex[3..5]),
             b: hex_to_u8(&hex[5..7]),
-        },
-        9 => RGBEither::RGBA {
+            a: 1.0,
+        }),
+        9 => Ok(RGBA {
             r: hex_to_u8(&hex[1..3]),
             g: hex_to_u8(&hex[3..5]),
             b: hex_to_u8(&hex[5..7]),
-            a: hex_to_u8(&hex[7..9]),
-        },
-        _ => panic!("Unsupported or invalid hex string"),
+            a: (hex_to_u8(&hex[7..9]) as f32) / 255.0,
+        }),
+        _ => Err(format!("Unsupported or invalid hex string: {}", hex)),
     }
 }
 
@@ -25,34 +27,160 @@ fn hex_to_u8(hex: &str) -> u8 {
     u8::from_str_radix(hex, 16).unwrap()
 }
 
-pub fn to_hex_string(rgb: RGBEither) -> String {
-    // TODO:
-    String::new()
+pub fn to_rgb_hex_string(rgb: RGBA) -> String {
+    format!(
+        "#{:02x}{:02x}{:02x}",
+        rgb.r,
+        rgb.g,
+        rgb.b,
+    )
+
+    // match rgb {
+    //     RGBEither::RGB { r, g, b } => format!("#{:02x}{:02x}{:02x}", r, g, b),
+    //     RGBEither::RGBA { r, g, b, a } => {
+    //         format!(
+    //             "#{:02x}{:02x}{:02x}{:02x}",
+    //             r,
+    //             g,
+    //             b,
+    //             (a as f32 * 255.0) as u8
+    //         )
+    //     }
+    // }
 }
 
 pub fn is_rgba(hex: &str) -> bool {
     hex.len() == 9
 }
 
-pub fn blend_rgba(a: RGB, b: RGBA) {}
-
-#[derive(Debug)]
-pub struct RGB {
-    r: u8,
-    g: u8,
-    b: u8,
+pub fn blend(bg_color: RGBA, fg_color: RGBA) -> RGBA {
+    RGBA {
+        // TODO: Improve this
+        r: (((1.0 - fg_color.a) * bg_color.r as f32) + (fg_color.a * fg_color.r as f32)) as u8,
+        g: (((1.0 - fg_color.a) * bg_color.g as f32) + (fg_color.a * fg_color.g as f32)) as u8,
+        b: (((1.0 - fg_color.a) * bg_color.b as f32) + (fg_color.a * fg_color.b as f32)) as u8,
+        a: 1.0,
+    }
 }
 
-#[derive(Debug)]
+// #[derive(Debug, Copy, Clone)]
+// pub struct RGB {
+//     pub r: u8,
+//     pub g: u8,
+//     pub b: u8,
+// }
+
+#[derive(Debug, Copy, Clone)]
 pub struct RGBA {
-    r: u8,
-    g: u8,
-    b: u8,
-    a: u8,
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
+    pub a: f32,
 }
 
-#[derive(Debug)]
-pub enum RGBEither {
-    RGB { r: u8, g: u8, b: u8 },
-    RGBA { r: u8, g: u8, b: u8, a: u8 },
+// #[derive(Debug)]
+// pub enum RGBEither {
+//     RGB { r: u8, g: u8, b: u8 },
+//     RGBA { r: u8, g: u8, b: u8, a: f32 },
+// }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // #[test]
+    // fn can_decode_rgb() {
+    //     let hexcolor6 = "#0f0fff";
+    //     let hexcolor3 = "#ff0";
+
+    //     let target6 = RGB {
+    //         r: 15,
+    //         g: 15,
+    //         b: 255,
+    //     };
+
+    //     let target3 = RGB {
+    //         r: 255,
+    //         g: 255,
+    //         b: 0,
+    //     };
+
+    //     if let Ok(RGBEither::RGB { r, g, b }) = from_hex_string(hexcolor6) {
+    //         assert_eq!((r, g, b), (target6.r, target6.g, target6.b))
+    //     }
+
+    //     if let Ok(RGBEither::RGB { r, g, b }) = from_hex_string(hexcolor3) {
+    //         assert_eq!((r, g, b), (target3.r, target3.g, target3.b))
+    //     }
+    // }
+
+    // #[test]
+    // fn can_encode_rgb() {
+    //     let color = RGBEither::RGB {
+    //         r: 15,
+    //         g: 15,
+    //         b: 255,
+    //     };
+    //     let target = "#0f0fff".to_owned();
+
+    //     let result = to_hex_string(color);
+    //     assert_eq!(result, target)
+    // }
+
+    #[test]
+    fn can_encode_rgba() {
+        let target = "#0f0fffcc".to_owned();
+        let color = RGBA {
+            r: 15,
+            g: 15,
+            b: 255,
+            a: 0.8,
+        };
+
+        let result = to_rgb_hex_string(color);
+        assert_eq!(result, target)
+    }
+
+    #[test]
+    fn can_decode_rgba() {
+        let color = "#0f0fffcc";
+        let target = RGBA {
+            r: 15,
+            g: 15,
+            b: 255,
+            a: 0.8,
+        };
+
+        if let Ok(RGBA { r, g, b, a }) = from_hex_string(color) {
+            assert_eq!((r, g, b, a), (target.r, target.g, target.b, target.a))
+        }
+    }
+
+    #[test]
+    fn can_blend_colors() {
+        let background = RGBA {
+            r: 0,
+            g: 0,
+            b: 0,
+            a: 0.5,
+        };
+        let foreground = RGBA {
+            r: 255,
+            g: 255,
+            b: 0,
+            a: 1.0,
+        };
+        let target = RGBA {
+            r: 127,
+            g: 127,
+            b: 0,
+            a: 1.0,
+        };
+
+        let result = blend(foreground, background);
+        assert_eq!(
+            (result.r, result.g, result.b),
+            (target.r, target.g, target.b)
+        )
+    }
 }
