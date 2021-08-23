@@ -1,11 +1,16 @@
 pub fn from_hex_string(hex: &str) -> Result<RGBA, String> {
-    // TODO: Maybe handle 4 characters RGBA strings? Don't really know if they exist..
     match hex.len() {
         4 => Ok(RGBA {
             r: hex_to_u8(&hex[1..2].repeat(2)),
             g: hex_to_u8(&hex[2..3].repeat(2)),
             b: hex_to_u8(&hex[3..4].repeat(2)),
             a: 1.0,
+        }),
+        5 => Ok(RGBA {
+            r: hex_to_u8(&hex[1..2].repeat(2)),
+            g: hex_to_u8(&hex[2..3].repeat(2)),
+            b: hex_to_u8(&hex[3..4].repeat(2)),
+            a: hex_to_u8(&hex[4..5].repeat(2)) as f32 / 255.0,
         }),
         7 => Ok(RGBA {
             r: hex_to_u8(&hex[1..3]),

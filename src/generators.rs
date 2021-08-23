@@ -1,8 +1,19 @@
 use crate::{colors, decoder, vim};
 
-pub fn generate_vimscript_config(theme: decoder::VSCodeTheme) -> String {
-    let mut result = String::new();
+pub fn generate_vimscript_config(target: &mut String, theme: decoder::VSCodeTheme) -> String {
+    generate_config(theme, target, &vim::vim_highlight)
+}
 
+pub fn generate_lua_config(target: &mut String, theme: decoder::VSCodeTheme) -> String {
+    target.push_str("local cmd = vim.cmd\n\n");
+    generate_config(theme, target, &vim::lua_highlight)
+}
+
+fn generate_config(
+    theme: decoder::VSCodeTheme,
+    target: &mut String,
+    mapper: &dyn Fn(&vim::Highlight) -> String,
+) -> String {
     for token in theme.token_colors {
         match token {
             decoder::VSCodeHighlight {
@@ -28,7 +39,7 @@ pub fn generate_vimscript_config(theme: decoder::VSCodeTheme) -> String {
                                     foreground: foreground.clone(),
                                     text_style: text_style.clone(),
                                 };
-                                result.push_str(&vim::highlight(&options))
+                                target.push_str(&mapper(&options))
                             }
                         }
                     }
@@ -40,32 +51,17 @@ pub fn generate_vimscript_config(theme: decoder::VSCodeTheme) -> String {
                                 foreground: foreground.clone(),
                                 text_style: text_style.clone(),
                             };
-                            result.push_str(&vim::highlight(&options))
+                            target.push_str(&mapper(&options))
                         }
                     }
                     _ => (),
                 }
-            } // if let Some(group) = match scope {
-              //     Some(decoder::VSCodeScope::Multiple(scopes)) => vim::map_groups(&scopes[0]),
-              //     Some(decoder::VSCodeScope::Single(scope)) => vim::map_groups(&scope),
-              //     _ => None,
-              // } {
-              //     let options = vim::Highlight {
-              //         group: group.to_owned(),
-              //         background,
-              //         foreground,
-              //         text_style,
-              //     };
-
-              //     result.push_str(&vim::highlight(options))
-              // }
-              // }
+            }
         }
     }
 
     let combined_opts = vim::combined_options();
-
-    let mut bg = colors::from_hex_string("#000000ff").unwrap();
+    let mut default_bg = colors::from_hex_string("#000000ff").unwrap();
 
     if let Some(theme_colors) = theme.colors {
         for combined in combined_opts {
@@ -83,7 +79,7 @@ pub fn generate_vimscript_config(theme: decoder::VSCodeTheme) -> String {
                 if let Ok(colors::RGBA { r, g, b, a }) =
                     colors::from_hex_string(&foreground.to_string())
                 {
-                    bg = colors::RGBA { r, g, b, a }
+                    default_bg = colors::RGBA { r, g, b, a }
                 }
             }
 
@@ -92,7 +88,7 @@ pub fn generate_vimscript_config(theme: decoder::VSCodeTheme) -> String {
                 if let Ok(colors::RGBA { r, g, b, a }) =
                     colors::from_hex_string(&foreground.to_string())
                 {
-                    let mut color = colors::blend(bg, colors::RGBA { r, g, b, a });
+                    let mut color = colors::blend(default_bg, colors::RGBA { r, g, b, a });
                     color = colors::scale(color, combined.color_scaler);
                     foreground = colors::to_rgb_hex_string(color);
                 }
@@ -103,12 +99,8 @@ pub fn generate_vimscript_config(theme: decoder::VSCodeTheme) -> String {
                     colors::from_hex_string(&background.to_string())
                 {
                     let mbg = colors::RGBA { r, g, b, a };
-                    let mut color = colors::blend(bg, mbg);
+                    let mut color = colors::blend(default_bg, mbg);
                     color = colors::scale(color, combined.color_scaler);
-
-                    color.r = (color.r as f32 * 0.5) as u8;
-                    color.g = (color.g as f32 * 0.5) as u8;
-                    color.b = (color.b as f32 * 0.5) as u8;
 
                     background = colors::to_rgb_hex_string(color)
                 }
@@ -118,15 +110,12 @@ pub fn generate_vimscript_config(theme: decoder::VSCodeTheme) -> String {
                 group: combined.vim_group,
                 foreground,
                 background,
-                text_style: String::new(), // TODO: Maybe use it here
+                text_style: String::new(),
             };
 
-            let line = vim::highlight(&options);
-            result.push_str(&line)
+            target.push_str(&mapper(&options))
         }
     }
 
-    result
+    target.to_owned()
 }
-
-pub fn generate_lua_config(theme: decoder::VSCodeTheme) {}
