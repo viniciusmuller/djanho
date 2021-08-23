@@ -18,21 +18,48 @@ pub fn generate_vimscript_config(theme: decoder::VSCodeTheme) -> String {
                 let foreground = fg.unwrap_or_default();
                 let text_style = fs.unwrap_or_default();
 
-                if let Some(group) = match scope {
-                    Some(decoder::VSCodeScope::Multiple(scopes)) => vim::map_groups(&scopes[0]),
-                    Some(decoder::VSCodeScope::Single(scope)) => vim::map_groups(&scope),
-                    _ => None,
-                } {
-                    let options = vim::Highlight {
-                        group: group.to_owned(),
-                        background,
-                        foreground,
-                        text_style,
-                    };
-
-                    result.push_str(&vim::highlight(options))
+                match scope {
+                    Some(decoder::VSCodeScope::Multiple(scopes)) => {
+                        for group in scopes {
+                            if let Some(group) = vim::map_groups(&group) {
+                                let options = vim::Highlight {
+                                    group: group.to_owned(),
+                                    background: background.clone(),
+                                    foreground: foreground.clone(),
+                                    text_style: text_style.clone(),
+                                };
+                                result.push_str(&vim::highlight(&options))
+                            }
+                        }
+                    }
+                    Some(decoder::VSCodeScope::Single(scope)) => {
+                        if let Some(group) = vim::map_groups(&scope) {
+                            let options = vim::Highlight {
+                                group: group.to_owned(),
+                                background: background.clone(),
+                                foreground: foreground.clone(),
+                                text_style: text_style.clone(),
+                            };
+                            result.push_str(&vim::highlight(&options))
+                        }
+                    }
+                    _ => (),
                 }
-            }
+            } // if let Some(group) = match scope {
+              //     Some(decoder::VSCodeScope::Multiple(scopes)) => vim::map_groups(&scopes[0]),
+              //     Some(decoder::VSCodeScope::Single(scope)) => vim::map_groups(&scope),
+              //     _ => None,
+              // } {
+              //     let options = vim::Highlight {
+              //         group: group.to_owned(),
+              //         background,
+              //         foreground,
+              //         text_style,
+              //     };
+
+              //     result.push_str(&vim::highlight(options))
+              // }
+              // }
         }
     }
 
@@ -65,7 +92,8 @@ pub fn generate_vimscript_config(theme: decoder::VSCodeTheme) -> String {
                 if let Ok(colors::RGBA { r, g, b, a }) =
                     colors::from_hex_string(&foreground.to_string())
                 {
-                    let color = colors::blend(bg, colors::RGBA { r, g, b, a });
+                    let mut color = colors::blend(bg, colors::RGBA { r, g, b, a });
+                    color = colors::scale(color, combined.color_scaler);
                     foreground = colors::to_rgb_hex_string(color);
                 }
             }
@@ -75,18 +103,15 @@ pub fn generate_vimscript_config(theme: decoder::VSCodeTheme) -> String {
                     colors::from_hex_string(&background.to_string())
                 {
                     let mbg = colors::RGBA { r, g, b, a };
-                    let color = colors::blend(bg, mbg);
+                    let mut color = colors::blend(bg, mbg);
+                    color = colors::scale(color, combined.color_scaler);
 
-                    // println!("{:?}", bg);
-                    // println!("{}", background);
-
-                    // println!("{:?}", mbg);
-                    // println!("{:?}", color);
+                    color.r = (color.r as f32 * 0.5) as u8;
+                    color.g = (color.g as f32 * 0.5) as u8;
+                    color.b = (color.b as f32 * 0.5) as u8;
 
                     background = colors::to_rgb_hex_string(color)
                 }
-                // println!("{:?}", bg);
-                // println!("{}", background)
             }
 
             let options = vim::Highlight {
@@ -96,7 +121,7 @@ pub fn generate_vimscript_config(theme: decoder::VSCodeTheme) -> String {
                 text_style: String::new(), // TODO: Maybe use it here
             };
 
-            let line = vim::highlight(options);
+            let line = vim::highlight(&options);
             result.push_str(&line)
         }
     }

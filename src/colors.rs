@@ -28,25 +28,7 @@ fn hex_to_u8(hex: &str) -> u8 {
 }
 
 pub fn to_rgb_hex_string(rgb: RGBA) -> String {
-    format!(
-        "#{:02x}{:02x}{:02x}",
-        rgb.r,
-        rgb.g,
-        rgb.b,
-    )
-
-    // match rgb {
-    //     RGBEither::RGB { r, g, b } => format!("#{:02x}{:02x}{:02x}", r, g, b),
-    //     RGBEither::RGBA { r, g, b, a } => {
-    //         format!(
-    //             "#{:02x}{:02x}{:02x}{:02x}",
-    //             r,
-    //             g,
-    //             b,
-    //             (a as f32 * 255.0) as u8
-    //         )
-    //     }
-    // }
+    format!("#{:02x}{:02x}{:02x}", rgb.r, rgb.g, rgb.b,)
 }
 
 pub fn is_rgba(hex: &str) -> bool {
@@ -55,7 +37,6 @@ pub fn is_rgba(hex: &str) -> bool {
 
 pub fn blend(bg_color: RGBA, fg_color: RGBA) -> RGBA {
     RGBA {
-        // TODO: Improve this
         r: (((1.0 - fg_color.a) * bg_color.r as f32) + (fg_color.a * fg_color.r as f32)) as u8,
         g: (((1.0 - fg_color.a) * bg_color.g as f32) + (fg_color.a * fg_color.g as f32)) as u8,
         b: (((1.0 - fg_color.a) * bg_color.b as f32) + (fg_color.a * fg_color.b as f32)) as u8,
@@ -63,12 +44,12 @@ pub fn blend(bg_color: RGBA, fg_color: RGBA) -> RGBA {
     }
 }
 
-// #[derive(Debug, Copy, Clone)]
-// pub struct RGB {
-//     pub r: u8,
-//     pub g: u8,
-//     pub b: u8,
-// }
+pub fn scale(mut color: RGBA, scale: f32) -> RGBA {
+    color.r = (color.r as f32 * scale) as u8;
+    color.g = (color.g as f32 * scale) as u8;
+    color.b = (color.b as f32 * scale) as u8;
+    color
+}
 
 #[derive(Debug, Copy, Clone)]
 pub struct RGBA {
@@ -77,12 +58,6 @@ pub struct RGBA {
     pub b: u8,
     pub a: f32,
 }
-
-// #[derive(Debug)]
-// pub enum RGBEither {
-//     RGB { r: u8, g: u8, b: u8 },
-//     RGBA { r: u8, g: u8, b: u8, a: f32 },
-// }
 
 #[cfg(test)]
 mod tests {

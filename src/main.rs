@@ -3,7 +3,7 @@ use std::io::Write;
 
 use clap::{App, Arg};
 
-use converter::{colors, decoder, generators};
+use converter::{decoder, generators};
 
 fn main() {
     let matches = App::new("VSCode->Vim Colorscheme Converter")
