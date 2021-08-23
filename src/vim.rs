@@ -1,33 +1,45 @@
-// TODO: Maybe use traits to create config generators?
-pub fn map_groups(group: &str) -> Option<String> {
-    match group {
-        "comment" => mk_group("Comment"),
-        "constant" => mk_group("Constant"),
-        "keyword" => mk_group("Keyword"),
-        "string" => mk_group("String"),
-        "invalid" => mk_group("Error"),
-        "brace" => mk_group("parens"),
-        "macro" => mk_group("Macro"),
-        "number" => mk_group("Number"),
-        "entity.name.function" => mk_group("Function"),
-        "keyword.operator" => mk_group("Operator"),
-        "keyword.control" => mk_group("Conditional"),
-
-        "struct" => mk_group("Structure"),
-        "enum" => mk_group("Structure"),
-
-        "variable" => mk_group("Identifier"),
-
+pub fn map_groups(group: &str) -> Option<&'static str> {
+    let result = match group {
+        // https://code.visualstudio.com/api/language-extensions/semantic-highlight-guide
+        // :help highlight-groups
+        "comment" => "Comment",
+        "constant" => "Constant",
+        "keyword" => "Keyword",
+        "string" => "String",
+        "invalid" => "Error",
+        "brace" => "parens",
+        "macro" => "Macro",
+        "number" => "Number",
+        "entity.name.function" => "Function",
+        "keyword.operator" => "Operator",
+        "keyword.control" => "Conditional",
+        "struct" => "Structure",
+        "enum" => "Structure",
+        "variable" => "Identifier",
         // Type
-        "type" => mk_group("Type"),
-        "entity.type.name" => mk_group("Type"),
-        "meta.type.name" => mk_group("Type"),
-        "storage" => mk_group("Type"),
+        "type" => "Type",
+        "entity.type.name" => "Type",
+        "meta.type.name" => "Type",
+        "storage" => "Type",
 
         // TODO: Treesitter support
+        _ => "NO_MATCH",
+    };
 
-        _ => None,
+    if result != "NO_MATCH" {
+        Some(result)
+    } else {
+        None
     }
+}
+
+pub fn links() -> Vec<(&'static str, &'static str)> {
+    vec![
+        ("Folded", "Comment"),
+        ("Whitespace", "Comment"),
+        ("NonText", "Comment"),
+        ("CursorLineNr", "Function"),
+    ]
 }
 
 pub fn combined_options() -> Vec<VimOption> {
@@ -43,6 +55,19 @@ pub fn combined_options() -> Vec<VimOption> {
         mk_combined("Pmenu", "editor.foreground", "editor.background", 0.8),
         mk_combined("PmenuSel", "tab.activeBackground", "editor.foreground", 1.0),
         mk_combined("PmenuThumb", "editor.foreground", "editor.background", 1.0),
+        // Diffs
+        mk_combined(
+            "DiffAdd",
+            "VIM_NONE",
+            "diffEditor.insertedTextBackground",
+            0.8,
+        ),
+        mk_combined(
+            "DiffDelete",
+            "VIM_NONE",
+            "diffEditor.removedTextBackground",
+            0.8,
+        ),
         // Normal and visual modes
         mk_combined("Normal", "editor.foreground", "editor.background", 1.0),
         mk_combined("Visual", "VIM_NONE", "editor.selectionBackground", 0.5),
@@ -75,25 +100,34 @@ pub fn combined_options() -> Vec<VimOption> {
             "tab.inactiveBackground",
             1.0,
         ),
+        // GitSigns
+        // mk_combined(
+        //     "GitSignsAdd",
+        //     "editor.insertedTextForeground",
+        //     "editor.background",
+        //     1.0,
+        // ),
+        // mk_combined(
+        //     "GitSignsDelete",
+        //     "editor.deletedTextForeground",
+        //     "editor.background",
+        //     1.0,
+        // ),
     ]
 }
 
 pub fn mk_combined(
-    vim_group: &str,
-    foreground: &str,
-    background: &str,
+    vim_group: &'static str,
+    foreground: &'static str,
+    background: &'static str,
     color_scaler: f32,
 ) -> VimOption {
     VimOption {
-        vim_group: vim_group.to_owned(),
-        combinator_foreground: foreground.to_owned(),
-        combinator_background: background.to_owned(),
+        vim_group,
+        combinator_foreground: foreground,
+        combinator_background: background,
         color_scaler,
     }
-}
-
-pub fn mk_group(group: &str) -> Option<String> {
-    Some(group.to_owned())
 }
 
 pub fn lua_highlight(options: &Highlight) -> String {
@@ -123,10 +157,18 @@ pub fn vim_highlight(options: &Highlight) -> String {
     format!("highlight {}{}{}{}\n", options.group, guibg, guifg, gui)
 }
 
+pub fn vim_link(group: &str, target: &str) -> String {
+    format!("highlight! link {} {}\n", group, target)
+}
+
+pub fn lua_link(group: &str, target: &str) -> String {
+    format!("cmd[[highlight! link {} {}]]\n", group, target)
+}
+
 pub struct VimOption {
-    pub combinator_foreground: String,
-    pub combinator_background: String,
-    pub vim_group: String,
+    pub combinator_foreground: &'static str,
+    pub combinator_background: &'static str,
+    pub vim_group: &'static str,
     pub color_scaler: f32,
 }
 
@@ -148,14 +190,14 @@ fn mk_option(option_type: &str, value: &str) -> String {
 
 #[derive(Debug)]
 pub struct CombinedOption {
-    pub vim_group: String,
-    pub combinator_foreground: String,
-    pub combinator_background: String,
+    pub vim_group: &'static str,
+    pub combinator_foreground: &'static str,
+    pub combinator_background: &'static str,
 }
 
 #[derive(Debug)]
 pub struct Highlight {
-    pub group: String,
+    pub group: &'static str,
     pub background: String,
     pub foreground: String,
     pub text_style: String,

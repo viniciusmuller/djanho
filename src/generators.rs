@@ -1,18 +1,22 @@
 use crate::{colors, decoder, vim};
 
 pub fn generate_vimscript_config(target: &mut String, theme: decoder::VSCodeTheme) -> String {
-    generate_config(theme, target, &vim::vim_highlight)
+    // TODO: Should this be cleared?
+    target.push_str("highlight clear\n");
+    generate_config(theme, target, &vim::vim_highlight, &vim::vim_link)
 }
 
 pub fn generate_lua_config(target: &mut String, theme: decoder::VSCodeTheme) -> String {
     target.push_str("local cmd = vim.cmd\n\n");
-    generate_config(theme, target, &vim::lua_highlight)
+    target.push_str("cmd[[highlight clear]]\n");
+    generate_config(theme, target, &vim::lua_highlight, &vim::lua_link)
 }
 
 fn generate_config(
     theme: decoder::VSCodeTheme,
     target: &mut String,
     mapper: &dyn Fn(&vim::Highlight) -> String,
+    linker: &dyn Fn(&str, &str) -> String,
 ) -> String {
     for token in theme.token_colors {
         match token {
@@ -33,25 +37,27 @@ fn generate_config(
                     Some(decoder::VSCodeScope::Multiple(scopes)) => {
                         for group in scopes {
                             if let Some(group) = vim::map_groups(&group) {
-                                let options = vim::Highlight {
-                                    group: group.to_owned(),
-                                    background: background.clone(),
-                                    foreground: foreground.clone(),
-                                    text_style: text_style.clone(),
-                                };
-                                target.push_str(&mapper(&options))
+                                append_highlight(
+                                    group,
+                                    &background,
+                                    &foreground,
+                                    &text_style,
+                                    target,
+                                    mapper,
+                                );
                             }
                         }
                     }
                     Some(decoder::VSCodeScope::Single(scope)) => {
                         if let Some(group) = vim::map_groups(&scope) {
-                            let options = vim::Highlight {
-                                group: group.to_owned(),
-                                background: background.clone(),
-                                foreground: foreground.clone(),
-                                text_style: text_style.clone(),
-                            };
-                            target.push_str(&mapper(&options))
+                            append_highlight(
+                                group,
+                                &background,
+                                &foreground,
+                                &text_style,
+                                target,
+                                mapper,
+                            );
                         }
                     }
                     _ => (),
@@ -61,17 +67,17 @@ fn generate_config(
     }
 
     let combined_opts = vim::combined_options();
-    let mut default_bg = colors::from_hex_string("#000000ff").unwrap();
+    let mut default_bg = colors::from_hex_string("#444444ff").unwrap();
 
     if let Some(theme_colors) = theme.colors {
         for combined in combined_opts {
             let mut foreground: String = theme_colors
-                .get(&combined.combinator_foreground)
+                .get(&combined.combinator_foreground.to_owned())
                 .cloned()
                 .unwrap_or_default();
 
             let mut background: String = theme_colors
-                .get(&combined.combinator_background)
+                .get(&combined.combinator_background.to_owned())
                 .cloned()
                 .unwrap_or_default();
 
@@ -117,5 +123,28 @@ fn generate_config(
         }
     }
 
+    // Linking highlight groups
+    let links = vim::links();
+    for (group, target_group) in links {
+        target.push_str(&linker(group, target_group))
+    }
+
     target.to_owned()
+}
+
+fn append_highlight(
+    group: &'static str,
+    background: &str,
+    foreground: &str,
+    text_style: &str,
+    target: &mut String,
+    mapper: &dyn Fn(&vim::Highlight) -> String,
+) {
+    let options = vim::Highlight {
+        group,
+        background: background.to_string(),
+        foreground: foreground.to_string(),
+        text_style: text_style.to_string(),
+    };
+    target.push_str(&mapper(&options))
 }

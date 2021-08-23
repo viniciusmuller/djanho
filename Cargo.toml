@@ -1,5 +1,5 @@
 [package]
-name = "converter"
+name = "djanho"
 version = "0.1.0"
 authors = ["Vinícius Müller <vinigm.nho@gmail.com>"]
 edition = "2018"

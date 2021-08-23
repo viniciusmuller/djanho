@@ -3,10 +3,10 @@ use std::io::Write;
 
 use clap::{App, Arg};
 
-use converter::{decoder, generators};
+use djanho::{decoder, generators};
 
 fn main() {
-    let matches = App::new("VSCode->Vim Colorscheme Converter")
+    let matches = App::new("Djanho")
         .version("0.1")
         .author("Vinícius Müller <vinigm.nho@gmail.com>")
         .about("Convert VSCode's JSON themes to Vimscript/Lua themes")

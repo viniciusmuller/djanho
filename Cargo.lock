@@ -44,7 +44,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "converter"
+name = "djanho"
 version = "0.1.0"
 dependencies = [
  "clap",

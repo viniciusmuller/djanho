@@ -24,6 +24,7 @@ pub struct VSCodeTheme {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct VSCodeHighlight {
     pub scope: Option<VSCodeScope>,
+    // TODO: This field should be also an Option
     pub settings: VSCodeScopeSettings,
 }
 
