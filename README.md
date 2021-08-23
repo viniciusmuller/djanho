@@ -21,6 +21,15 @@ Dracula                    |  Solarized Dark           | Gruvbox Dark
 cargo build --release
 ```
 
+## Usage
+```bash
+djanho vscode-theme.json
+```
+To see all the available options, use
+```bash
+djanho --help
+```
+
 ## Notice
 - Some VSCode themes have trailing commas in its jsons, and the current parser
     does not support them. If you receive an runtime error due to these trailing
