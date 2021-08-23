@@ -1,4 +1,4 @@
-Djanho is a prototype which tries to convert VSCode themes to (Neo)vim
+Djanho is a prototype which tries to convert VSCode themes to (Neo)Vim
 colorschemes.
 
 ## Features
@@ -11,7 +11,7 @@ colorschemes.
 - Other plugins support
 
 ## Demo
-The themes below were converted directly from VSCode's .json theme files.
+The colorschemes below were converted directly from VSCode's .json theme files.
 Dracula                    |  Solarized Dark           | Gruvbox Dark
 :-------------------------:|:-------------------------:|:-------------------------
 ![](./images/dracula-converted.png) | ![](./images/solarized-dark-converted.png) | ![](./images/gruvbox-dark-converted.png)
