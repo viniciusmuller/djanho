@@ -95,18 +95,17 @@ fn generate_config(
                     colors::from_hex_string(&foreground.to_string())
                 {
                     let mut color = colors::blend(default_bg, colors::RGBA { r, g, b, a });
-                    color = colors::scale(color, combined.color_scaler);
+                    color = colors::scale(&color, combined.color_scaler);
                     foreground = colors::to_rgb_hex_string(color);
                 }
             }
 
             if colors::is_rgba(&background.to_string()) {
                 if let Ok(colors::RGBA { r, g, b, a }) =
-                    colors::from_hex_string(&background.to_string())
-                {
+                    colors::from_hex_string(&background.to_string()) {
                     let mbg = colors::RGBA { r, g, b, a };
                     let mut color = colors::blend(default_bg, mbg);
-                    color = colors::scale(color, combined.color_scaler);
+                    color = colors::scale(&color, combined.color_scaler);
 
                     background = colors::to_rgb_hex_string(color)
                 }

@@ -1,3 +1,4 @@
+// TODO: Learn how to use rust macros and turn this into a beautiful DSL.
 pub fn map_groups(group: &str) -> Option<&'static str> {
     let result = match group {
         // https://code.visualstudio.com/api/language-extensions/semantic-highlight-guide
@@ -8,19 +9,72 @@ pub fn map_groups(group: &str) -> Option<&'static str> {
         "string" => "String",
         "invalid" => "Error",
         "brace" => "parens",
+
         "macro" => "Macro",
+        "entity.name.function.macro" => "Macro",
+
         "number" => "Number",
+
+        "brackethighlighter.tag" => "MyTag",
+        "brackethighlighter.angle" => "MyTag",
+        "brackethighlighter.round" => "MyTag",
+        "brackethighlighter.square" => "MyTag",
+
         "entity.name.function" => "Function",
+        "function" => "Function",
+
         "keyword.operator" => "Operator",
+        "operator" => "Operator",
+
+        "label" => "Label",
+
         "keyword.control" => "Conditional",
+        "keyword.control.conditional" => "Keyword",
+        "conditional" => "Conditional",
+
         "struct" => "Structure",
         "enum" => "Structure",
         "variable" => "Identifier",
         // Type
         "type" => "Type",
+        "typeParameter" => "Type",
         "entity.type.name" => "Type",
+        "entity.name.type" => "Type",
         "meta.type.name" => "Type",
         "storage" => "Type",
+
+        // -- TSAnnotation         { };    -- For C++/Dart attributes, annotations that can be attached to the code to denote some kind of meta information.
+        // -- TSAttribute          { };    -- (unstable) TODO: docs
+        // -- TSBoolean            { };    -- For booleans.
+        "constant.character" => "TSCharacter",
+        // -- TSConstructor        { };    -- For constructor calls and definitions: ` { }` in Lua, and Java constructors.
+        // -- TSConstMacro         { };    -- For constants that are defined by macros: `NULL` in C.
+        // -- TSError              { };    -- For syntax/parser errors.
+        // -- TSException          { };    -- For exception related keywords.
+        "function.defaultLibrary" => "TSFuncBuiltin",
+        // -- TSInclude            { };    -- For includes: `#include` in C, `use` or `extern crate` in Rust, or `require` in Lua.
+        "keyword.declaration" => "TSKeywordFunction",
+        "method" => "TSMethod",
+        "namespace" => "TSNamespace",
+        // -- TSNone               { };    -- TODO: docs
+        "property" => "TSField",
+
+        "parameter" => "TSParameter",
+        // -- TSRepeat             { };    -- For keywords related to loops.
+        "regex" => "TSStringRegex",
+        // -- TSStringEscape       { };    -- For escape characters within a string.
+        // -- TSSymbol             { };    -- For identifiers referring to symbols or atoms.
+        "type.defaultLibrary" => "TSTypeBuiltin",
+        "variable.readonly.defaultLibrary" => "TSVariableBuiltin",
+        // -- TSText               { };    -- For strings considered text in a markup language.
+        // -- TSEmphasis           { };    -- For text to be represented with emphasis.
+        // -- TSUnderline          { };    -- For text to be represented with an underline.
+        // -- TSStrike             { };    -- For strikethrough text.
+        // -- TSTitle              { };    -- Text that is part of a title.
+        // -- TSLiteral            { };    -- Literal text.
+        // -- TSURI                { };    -- Any URI like a link or email.
+
+        // TODO: Add linking group fallback, eg: Keyword fallbacks to Conditional
 
         // TODO: Treesitter support
         _ => "NO_MATCH",
@@ -35,10 +89,32 @@ pub fn map_groups(group: &str) -> Option<&'static str> {
 
 pub fn links() -> Vec<(&'static str, &'static str)> {
     vec![
+        // Vim builtins
         ("Folded", "Comment"),
         ("Whitespace", "Comment"),
         ("NonText", "Comment"),
         ("CursorLineNr", "Function"),
+        // Treesitter
+        ("TSFuncMacro", "Macro"),
+        ("TSFunction", "Function"),
+        ("TSType", "Type"),
+        ("TSLabel", "Label"),
+        ("TSVariable", "Variable"),
+        ("TSComment", "Comment"),
+        ("TSProperty", "TSField"),
+        ("TSParameterReference", "TSParameter"),
+        ("TSOperator", "Operator"),
+        ("TSNumber", "Number"),
+        ("TSFloat", "Number"),
+        ("TSString", "String"),
+        ("TSConditional", "Conditional"),
+        ("TSConstant", "Constant"),
+        ("TSTag", "MyTag"),
+        ("TSPunctBracket", "MyTag"),
+        ("TSPunctSpecial", "TSPunctDelimiter"),
+        ("TSTagDelimiter", "Type"),
+        ("TSKeyword", "Keyword"),
+        ("TSConstBuiltin", "TSVariableBuiltin"),
     ]
 }
 
@@ -113,6 +189,8 @@ pub fn combined_options() -> Vec<VimOption> {
         //     "editor.background",
         //     1.0,
         // ),
+        // Treesitter
+        mk_combined("TSPunctDelimiter", "editor.foreground", "VIM_NONE", 1.0)
     ]
 }
 
@@ -156,6 +234,7 @@ pub fn vim_highlight(options: &Highlight) -> String {
 
     format!("highlight {}{}{}{}\n", options.group, guibg, guifg, gui)
 }
+
 
 pub fn vim_link(group: &str, target: &str) -> String {
     format!("highlight! link {} {}\n", group, target)

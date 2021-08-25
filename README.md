@@ -39,7 +39,7 @@ djanho --help
     ```
 - Language-specific support is not so good, since most languages creates a lot of
     specific highlight groups, this program does not target them. Hopefully
-    adding treesitter support will improve this.
+    treesitter support will improve this.
 
 ## Contributing
 Feel free to open an issue or a pull request in order to fix bugs, improve

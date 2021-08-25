@@ -49,11 +49,13 @@ pub fn blend(bg_color: RGBA, fg_color: RGBA) -> RGBA {
     }
 }
 
-pub fn scale(mut color: RGBA, scale: f32) -> RGBA {
-    color.r = (color.r as f32 * scale) as u8;
-    color.g = (color.g as f32 * scale) as u8;
-    color.b = (color.b as f32 * scale) as u8;
-    color
+pub fn scale(color: &RGBA, scale: f32) -> RGBA {
+    RGBA {
+        r: (color.r as f32 * scale) as u8,
+        g: (color.g as f32 * scale) as u8,
+        b: (color.b as f32 * scale) as u8,
+        a: 1.0
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
