@@ -44,13 +44,13 @@ fn main() {
     let theme = decoder::parse_file(filepath.to_string());
     let generator = if has_lua {
         generators::generate_lua_config
-    } else {
+    }
+    else {
         generators::generate_vimscript_config
     };
 
-    let mut buffer = String::new();
-    generator(&mut buffer, theme);
+    let config = generator(theme);
     let mut f = File::create(output_path).expect("Unable to create file");
-    f.write_all(buffer.as_bytes())
+    f.write_all(config.as_bytes())
         .expect("Unable to write the generated config")
 }

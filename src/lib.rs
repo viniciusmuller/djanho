@@ -1,5 +1,9 @@
-pub mod generator;
 pub mod generators;
+pub mod vim;
+
+pub mod utils;
 pub mod decoder;
 pub mod colors;
-pub mod vim;
+pub mod generator;
+pub mod vimscript;
+pub mod lua;

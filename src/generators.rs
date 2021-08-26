@@ -1,43 +1,26 @@
-use std::{
-    collections::{HashMap, HashSet},
-    iter::FromIterator,
+use crate::{
+    colors, decoder, generator::ConfigGenerator, lua::LuaGenerator, vim,
+    vimscript::VimscriptGenerator,
 };
+use std::collections::HashMap;
 
 type UsedColors = HashMap<String, String>;
 
-use crate::{colors, decoder, vim};
-
-pub fn generate_vimscript_config(target: &mut String, theme: decoder::VSCodeTheme) {
-    // TODO: Should this be cleared?
-    target.push_str("highlight clear\n");
-    generate_config(theme, target, &vim::vim_highlight, &vim::vim_link)
+pub fn generate_vimscript_config(theme: decoder::VSCodeTheme) -> String {
+    // TODO: Maybe find a way to have kinda a trait-generic variable to store
+    // the generator struct
+    let mut generator = VimscriptGenerator::new();
+    generate_config(theme, &mut generator);
+    generator.collect()
 }
 
-pub fn generate_lua_config(target: &mut String, theme: decoder::VSCodeTheme) {
-    // TODO: Create lua function to highlight
-    target.push_str("local highlight = function(group, fg, bg, attr, sp)
-  fg = fg and 'guifg=' .. fg or ''
-  bg = bg and 'guibg=' .. bg or ''
-  attr = attr and 'gui=' .. attr or ''
-	sp = sp and 'guisp=' .. sp or ''
-
-  vim.api.nvim_command('highlight ' .. group .. ' '.. fg .. ' ' .. bg .. ' '.. attr .. ' ' .. sp)
-end
-
-local link = function(target, group)
-  vim.api.nvim_command('highlight link ' .. target .. ' '.. group)
-end
-
-vim.cmd[[highlight clear]]\n");
-    generate_config(theme, target, &vim::lua_highlight, &vim::lua_link)
+pub fn generate_lua_config(theme: decoder::VSCodeTheme) -> String {
+    let mut generator = LuaGenerator::new();
+    generate_config(theme, &mut generator);
+    generator.collect()
 }
 
-fn generate_config(
-    theme: decoder::VSCodeTheme,
-    target: &mut String,
-    mapper: &dyn Fn(&vim::VimHighlight) -> String,
-    linker: &dyn Fn(&str, &str) -> String,
-) {
+fn generate_config<T: ConfigGenerator>(theme: decoder::VSCodeTheme, generator: &mut T) {
     let highlights = vim::highlights();
     let mut color_idx = 0;
     let mut used_colors: UsedColors = HashMap::new();
@@ -143,23 +126,26 @@ fn generate_config(
                 text_style: String::new(),
             };
 
-            target.push_str(&mapper(&options))
+            // target.push_str(&mapper(&options));
+            generator.highlight(&options);
         }
     }
 
     // Linking highlight groups (this boi is ok)
     for (group, target_group) in highlights.links {
-        target.push_str(&linker(group, target_group))
+        // target.push_str(&linker(group, target_group));
+        generator.link(group, target_group);
     }
 }
 
-fn append_highlight(
+fn append_highlight<T: ConfigGenerator>(
     group: &'static str,
     background: &str,
     foreground: &str,
     text_style: &str,
-    target: &mut String,
-    mapper: &dyn Fn(&vim::VimHighlight) -> String,
+    generator: &mut T,
+    // target: &mut String,
+    // mapper: &dyn Fn(&vim::VimHighlight) -> String,
 ) {
     let options = vim::VimHighlight {
         group,
@@ -167,7 +153,8 @@ fn append_highlight(
         foreground: foreground.to_string(),
         text_style: text_style.to_string(),
     };
-    target.push_str(&mapper(&options))
+    generator.highlight(&options);
+    // target.push_str(&mapper(&options))
 }
 
 fn add_to_hashmap(
@@ -177,11 +164,14 @@ fn add_to_hashmap(
     foreground: String,
 ) {
     if !background.is_empty() {
-        used_colors.insert(format!("Color{}", idx), background.to_string());
-        *idx += 1;
+        add_and_increase_idx(used_colors, idx, background.to_string())
     }
     if !foreground.is_empty() {
-        used_colors.insert(format!("Color{}", idx), foreground.to_string());
-        *idx += 1;
+        add_and_increase_idx(used_colors, idx, foreground.to_string())
     }
+}
+
+fn add_and_increase_idx(used_colors: &mut UsedColors, idx: &mut i32, value: String) {
+    used_colors.insert(format!("Color{}", idx), value);
+    *idx += 1;
 }

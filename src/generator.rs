@@ -1,6 +1,9 @@
+use crate::vim::VimHighlight;
+
 // Use this for Lua and Vimscript generators
 pub trait ConfigGenerator {
-    fn link(&self) -> ();
-    fn highlight(&self) -> ();
-    fn setup(&self) -> ();
+    fn collect(&self) -> String;
+    fn link(&mut self, group: &str, target: &str);
+    fn highlight(&mut self, options: &VimHighlight);
+    fn newline(&mut self);
 }

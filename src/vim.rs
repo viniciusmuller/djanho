@@ -204,7 +204,7 @@ pub fn highlights() -> Highlight {
     }
 }
 
-// TODO: Learn how to use rust macros and turn this into a beautiful DSL.
+// TODO: Remove this soon
 pub fn map_groups(group: &str) -> Option<&'static str> {
     let result = match group {
         // https://code.visualstudio.com/api/language-extensions/semantic-highlight-guide
@@ -292,37 +292,7 @@ pub fn map_groups(group: &str) -> Option<&'static str> {
     }
 }
 
-pub fn links() -> Vec<(&'static str, &'static str)> {
-    vec![
-        // Vim builtins
-        ("Folded", "Comment"),
-        ("Whitespace", "Comment"),
-        ("NonText", "Comment"),
-        ("CursorLineNr", "Function"),
-        // Treesitter
-        ("TSFuncMacro", "Macro"),
-        ("TSFunction", "Function"),
-        ("TSType", "Type"),
-        ("TSLabel", "Type"),
-        ("TSVariable", "Variable"),
-        ("TSComment", "Comment"),
-        ("TSProperty", "TSField"),
-        ("TSParameterReference", "TSParameter"),
-        ("TSOperator", "Operator"),
-        ("TSNumber", "Number"),
-        ("TSFloat", "Number"),
-        ("TSString", "String"),
-        ("TSConditional", "Conditional"),
-        ("TSConstant", "Constant"),
-        ("TSTag", "MyTag"),
-        ("TSPunctBracket", "MyTag"),
-        ("TSPunctSpecial", "TSPunctDelimiter"),
-        ("TSTagDelimiter", "Type"),
-        ("TSKeyword", "Keyword"),
-        ("TSConstBuiltin", "TSVariableBuiltin"),
-    ]
-}
-
+// TODO: Remove this soon
 pub fn combined_options() -> Vec<VimOption> {
     vec![
         mk_combined(
@@ -399,7 +369,7 @@ pub fn combined_options() -> Vec<VimOption> {
     ]
 }
 
-pub fn mk_combined(
+fn mk_combined(
     vim_group: &'static str,
     foreground: &'static str,
     background: &'static str,
@@ -413,70 +383,11 @@ pub fn mk_combined(
     }
 }
 
-pub fn lua_highlight(options: &VimHighlight) -> String {
-    let guibg = mk_lua_option(&options.background);
-    let guifg = mk_lua_option(&options.foreground);
-    let gui = mk_lua_option(&map_font_styles(&options.text_style));
-
-    if guibg == "nil" && guifg == "nil" && gui == "nil" {
-        return String::new();
-    }
-
-    format!(
-        "highlight('{}', {}, {}, {})\n",
-        options.group, guibg, guifg, gui
-    )
-}
-
-pub fn vim_highlight(options: &VimHighlight) -> String {
-    let guibg = mk_vim_option("guibg", &options.background);
-    let guifg = mk_vim_option("guifg", &options.foreground);
-    let gui = mk_vim_option("gui", &map_font_styles(&options.text_style));
-
-    if guibg.is_empty() && guifg.is_empty() && gui.is_empty() {
-        return String::new();
-    }
-
-    format!("highlight {}{}{}{}\n", options.group, guibg, guifg, gui)
-}
-
-pub fn vim_link(group: &str, target: &str) -> String {
-    format!("highlight! link {} {}\n", group, target)
-}
-
-pub fn lua_link(group: &str, target: &str) -> String {
-    format!("link('{}', '{}')\n", group, target)
-}
-
 pub struct VimOption {
     pub combinator_foreground: &'static str,
     pub combinator_background: &'static str,
     pub vim_group: &'static str,
     pub color_scaler: f32,
-}
-
-fn map_font_styles(style: &str) -> String {
-    match style {
-        "italic" => "italic".to_owned(),
-        "bold" => "bold".to_owned(),
-        _ => String::new(),
-    }
-}
-
-fn mk_vim_option(option_type: &str, value: &str) -> String {
-    if value.is_empty() {
-        String::new()
-    } else {
-        format!(" {}={}", option_type, value)
-    }
-}
-
-fn mk_lua_option(value: &str) -> String {
-    if value.is_empty() {
-        "nil".to_owned()
-    } else {
-        format!("'{}'", value)
-    }
 }
 
 #[derive(Debug)]
