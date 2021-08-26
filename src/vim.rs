@@ -1,3 +1,60 @@
+// VSCode Token, Vim target highlight, fallback group
+type VSCodeToken = (&'static str, &'static str, Option<&'static str>);
+// Vim target, VSCode UI FG, VSCode UI BG, Opacity
+type VSCodeColor = (
+    &'static str,
+    Option<&'static str>,
+    Option<&'static str>,
+    f32,
+);
+// Vim target group, Vim source group
+type VimLink = (&'static str, &'static str);
+
+#[derive(Debug)]
+struct NewHighlight {
+    tokens: Vec<VSCodeToken>,
+    colors: Vec<VSCodeColor>,
+    links: Vec<VimLink>,
+}
+
+fn highlights() -> NewHighlight {
+    NewHighlight {
+        tokens: vec![
+            ("comment", "Comment", None),
+            ("macro", "Macro", Some("Function")),
+        ],
+        colors: vec![("Statusline", Some("editor.background"), None, 1.0)],
+        links: vec![
+            // Vim builtins
+            ("Folded", "Comment"),
+            ("Whitespace", "Comment"),
+            ("NonText", "Comment"),
+            ("CursorLineNr", "Function"),
+            // Treesitter
+            ("TSFuncMacro", "Macro"),
+            ("TSFunction", "Function"),
+            ("TSType", "Type"),
+            ("TSLabel", "Type"),
+            ("TSVariable", "Variable"),
+            ("TSComment", "Comment"),
+            ("TSProperty", "TSField"),
+            ("TSParameterReference", "TSParameter"),
+            ("TSOperator", "Operator"),
+            ("TSNumber", "Number"),
+            ("TSFloat", "Number"),
+            ("TSString", "String"),
+            ("TSConditional", "Conditional"),
+            ("TSConstant", "Constant"),
+            ("TSTag", "MyTag"),
+            ("TSPunctBracket", "MyTag"),
+            ("TSPunctSpecial", "TSPunctDelimiter"),
+            ("TSTagDelimiter", "Type"),
+            ("TSKeyword", "Keyword"),
+            ("TSConstBuiltin", "TSVariableBuiltin"),
+        ],
+    }
+}
+
 // TODO: Learn how to use rust macros and turn this into a beautiful DSL.
 pub fn map_groups(group: &str) -> Option<&'static str> {
     let result = match group {
@@ -14,6 +71,7 @@ pub fn map_groups(group: &str) -> Option<&'static str> {
         "entity.name.function.macro" => "Macro",
 
         "number" => "Number",
+        "constant.numeric" => "Number",
 
         "brackethighlighter.tag" => "MyTag",
         "brackethighlighter.angle" => "MyTag",
@@ -29,8 +87,8 @@ pub fn map_groups(group: &str) -> Option<&'static str> {
         "label" => "Label",
 
         "keyword.control" => "Conditional",
-        "keyword.control.conditional" => "Keyword",
         "conditional" => "Conditional",
+        "keyword.control.conditional" => "Conditional",
 
         "struct" => "Structure",
         "enum" => "Structure",
@@ -75,8 +133,6 @@ pub fn map_groups(group: &str) -> Option<&'static str> {
         // -- TSURI                { };    -- Any URI like a link or email.
 
         // TODO: Add linking group fallback, eg: Keyword fallbacks to Conditional
-
-        // TODO: Treesitter support
         _ => "NO_MATCH",
     };
 
@@ -98,7 +154,7 @@ pub fn links() -> Vec<(&'static str, &'static str)> {
         ("TSFuncMacro", "Macro"),
         ("TSFunction", "Function"),
         ("TSType", "Type"),
-        ("TSLabel", "Label"),
+        ("TSLabel", "Type"),
         ("TSVariable", "Variable"),
         ("TSComment", "Comment"),
         ("TSProperty", "TSField"),
@@ -190,7 +246,7 @@ pub fn combined_options() -> Vec<VimOption> {
         //     1.0,
         // ),
         // Treesitter
-        mk_combined("TSPunctDelimiter", "editor.foreground", "VIM_NONE", 1.0)
+        mk_combined("TSPunctDelimiter", "editor.foreground", "VIM_NONE", 1.0),
     ]
 }
 
@@ -234,7 +290,6 @@ pub fn vim_highlight(options: &Highlight) -> String {
 
     format!("highlight {}{}{}{}\n", options.group, guibg, guifg, gui)
 }
-
 
 pub fn vim_link(group: &str, target: &str) -> String {
     format!("highlight! link {} {}\n", group, target)
