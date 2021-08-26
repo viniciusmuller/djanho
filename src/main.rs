@@ -32,8 +32,6 @@ fn main() {
         )
         .get_matches();
 
-    let mut buffer = String::new();
-
     let has_lua = matches.is_present("LUA_CONFIG");
     let default_extension = if has_lua { "lua" } else { "vim" };
 
@@ -50,8 +48,9 @@ fn main() {
         generators::generate_vimscript_config
     };
 
-    let generated = generator(&mut buffer, theme);
+    let mut buffer = String::new();
+    generator(&mut buffer, theme);
     let mut f = File::create(output_path).expect("Unable to create file");
-    f.write_all(generated.as_bytes())
+    f.write_all(buffer.as_bytes())
         .expect("Unable to write the generated config")
 }

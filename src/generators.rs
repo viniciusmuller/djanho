@@ -1,70 +1,94 @@
+use std::{
+    collections::{HashMap, HashSet},
+    iter::FromIterator,
+};
+
+type UsedColors = HashMap<String, String>;
+
 use crate::{colors, decoder, vim};
 
-pub fn generate_vimscript_config(target: &mut String, theme: decoder::VSCodeTheme) -> String {
+pub fn generate_vimscript_config(target: &mut String, theme: decoder::VSCodeTheme) {
     // TODO: Should this be cleared?
     target.push_str("highlight clear\n");
     generate_config(theme, target, &vim::vim_highlight, &vim::vim_link)
 }
 
-pub fn generate_lua_config(target: &mut String, theme: decoder::VSCodeTheme) -> String {
-    target.push_str("local cmd = vim.cmd\n\n");
-    target.push_str("cmd[[highlight clear]]\n");
+pub fn generate_lua_config(target: &mut String, theme: decoder::VSCodeTheme) {
+    // TODO: Create lua function to highlight
+    target.push_str("local highlight = function(group, fg, bg, attr, sp)
+  fg = fg and 'guifg=' .. fg or ''
+  bg = bg and 'guibg=' .. bg or ''
+  attr = attr and 'gui=' .. attr or ''
+	sp = sp and 'guisp=' .. sp or ''
+
+  vim.api.nvim_command('highlight ' .. group .. ' '.. fg .. ' ' .. bg .. ' '.. attr .. ' ' .. sp)
+end
+
+local link = function(target, group)
+  vim.api.nvim_command('highlight link ' .. target .. ' '.. group)
+end
+
+vim.cmd[[highlight clear]]\n");
     generate_config(theme, target, &vim::lua_highlight, &vim::lua_link)
 }
 
 fn generate_config(
     theme: decoder::VSCodeTheme,
     target: &mut String,
-    mapper: &dyn Fn(&vim::Highlight) -> String,
+    mapper: &dyn Fn(&vim::VimHighlight) -> String,
     linker: &dyn Fn(&str, &str) -> String,
-) -> String {
-    for token in theme.token_colors {
-        match token {
-            decoder::VSCodeHighlight {
-                scope,
-                settings:
-                    decoder::VSCodeScopeSettings {
-                        background: bg,
-                        foreground: fg,
-                        font_style: fs,
-                    },
-            } => {
-                let background = bg.unwrap_or_default();
-                let foreground = fg.unwrap_or_default();
-                let text_style = fs.unwrap_or_default();
+) {
+    let highlights = vim::highlights();
+    let mut color_idx = 0;
+    let mut used_colors: UsedColors = HashMap::new();
 
-                match scope {
-                    Some(decoder::VSCodeScope::Multiple(scopes)) => {
-                        for group in scopes {
-                            if let Some(group) = vim::map_groups(&group) {
-                                append_highlight(
-                                    group,
-                                    &background,
-                                    &foreground,
-                                    &text_style,
-                                    target,
-                                    mapper,
-                                );
-                            }
-                        }
+    // Parse process:
+    // Identify matches between the specified vim groups and the colorscheme
+    // and save them into a hashmap (1pass)
+    // Create color variables in vimscript
+    // For each group, check if it's in the matched colors, if it is,
+    // add it to the vimscript stuff using the generated variable by step 1 (1pass)
+    // Done
+
+    for token in theme.tokens {
+        if let decoder::VSCodeHighlight {
+            scope: Some(scope),
+            settings:
+                decoder::VSCodeScopeSettings {
+                    background: bg,
+                    foreground: fg,
+                    ..
+                },
+        } = token
+        {
+            let background = bg.unwrap_or_default();
+            let foreground = fg.unwrap_or_default();
+
+            if let decoder::VSCodeScope::Single(group) = scope {
+                if let Some(_) = vim::map_groups(&group) {
+                    add_to_hashmap(
+                        &mut color_idx,
+                        &mut used_colors,
+                        background.to_string(),
+                        foreground.to_string(),
+                    );
+                }
+            } else if let decoder::VSCodeScope::Multiple(scopes) = scope {
+                for group in scopes {
+                    if let Some(_) = vim::map_groups(&group) {
+                        add_to_hashmap(
+                            &mut color_idx,
+                            &mut used_colors,
+                            background.to_string(),
+                            foreground.to_string(),
+                        );
                     }
-                    Some(decoder::VSCodeScope::Single(scope)) => {
-                        if let Some(group) = vim::map_groups(&scope) {
-                            append_highlight(
-                                group,
-                                &background,
-                                &foreground,
-                                &text_style,
-                                target,
-                                mapper,
-                            );
-                        }
-                    }
-                    _ => (),
                 }
             }
         }
     }
+
+    dbg!(used_colors);
 
     let combined_opts = vim::combined_options();
     let mut default_bg = colors::from_hex_string("#444444ff").unwrap();
@@ -102,7 +126,8 @@ fn generate_config(
 
             if colors::is_rgba(&background.to_string()) {
                 if let Ok(colors::RGBA { r, g, b, a }) =
-                    colors::from_hex_string(&background.to_string()) {
+                    colors::from_hex_string(&background.to_string())
+                {
                     let mbg = colors::RGBA { r, g, b, a };
                     let mut color = colors::blend(default_bg, mbg);
                     color = colors::scale(&color, combined.color_scaler);
@@ -111,7 +136,7 @@ fn generate_config(
                 }
             }
 
-            let options = vim::Highlight {
+            let options = vim::VimHighlight {
                 group: combined.vim_group,
                 foreground,
                 background,
@@ -122,13 +147,10 @@ fn generate_config(
         }
     }
 
-    // Linking highlight groups
-    let links = vim::links();
-    for (group, target_group) in links {
+    // Linking highlight groups (this boi is ok)
+    for (group, target_group) in highlights.links {
         target.push_str(&linker(group, target_group))
     }
-
-    target.to_owned()
 }
 
 fn append_highlight(
@@ -137,13 +159,29 @@ fn append_highlight(
     foreground: &str,
     text_style: &str,
     target: &mut String,
-    mapper: &dyn Fn(&vim::Highlight) -> String,
+    mapper: &dyn Fn(&vim::VimHighlight) -> String,
 ) {
-    let options = vim::Highlight {
+    let options = vim::VimHighlight {
         group,
         background: background.to_string(),
         foreground: foreground.to_string(),
         text_style: text_style.to_string(),
     };
     target.push_str(&mapper(&options))
+}
+
+fn add_to_hashmap(
+    idx: &mut i32,
+    used_colors: &mut UsedColors,
+    background: String,
+    foreground: String,
+) {
+    if !background.is_empty() {
+        used_colors.insert(format!("Color{}", idx), background.to_string());
+        *idx += 1;
+    }
+    if !foreground.is_empty() {
+        used_colors.insert(format!("Color{}", idx), foreground.to_string());
+        *idx += 1;
+    }
 }

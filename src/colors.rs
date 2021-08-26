@@ -110,20 +110,6 @@ mod tests {
     // }
 
     #[test]
-    fn can_encode_rgba() {
-        let target = "#0f0fffcc".to_owned();
-        let color = RGBA {
-            r: 15,
-            g: 15,
-            b: 255,
-            a: 0.8,
-        };
-
-        let result = to_rgb_hex_string(color);
-        assert_eq!(result, target)
-    }
-
-    #[test]
     fn can_decode_rgba() {
         let color = "#0f0fffcc";
         let target = RGBA {

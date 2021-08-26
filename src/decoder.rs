@@ -17,7 +17,7 @@ pub struct VSCodeTheme {
     #[serde(rename = "type")]
     pub type_: Option<String>,
     #[serde(rename = "tokenColors")]
-    pub token_colors: Vec<VSCodeHighlight>,
+    pub tokens: Vec<VSCodeHighlight>,
     pub colors: Option<HashMap<String, String>>,
 }
 
