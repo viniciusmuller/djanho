@@ -1,8 +1,18 @@
-use crate::utils::map_font_styles;
+use crate::vim::map_font_styles;
 use crate::{generator::ConfigGenerator, vim::VimHighlight};
 
 pub struct VimscriptGenerator {
     buffer: String,
+}
+
+impl Default for VimscriptGenerator {
+    fn default() -> VimscriptGenerator {
+        let mut _self = VimscriptGenerator {
+            buffer: String::new(),
+        };
+        _self.buffer += "highlight clear\n";
+        _self
+    }
 }
 
 impl ConfigGenerator for VimscriptGenerator {
@@ -15,18 +25,11 @@ impl ConfigGenerator for VimscriptGenerator {
     fn highlight(&mut self, options: &VimHighlight) {
         self.buffer += highlight(options).as_str()
     }
-    fn newline(&mut self) -> () {
-        self.buffer += "\n";
+    fn variable(&mut self, name: String, color: String) {
+        self.buffer += create_variable(name, color).as_str()
     }
-}
-
-impl VimscriptGenerator {
-    pub fn new() -> VimscriptGenerator {
-        let mut _self = VimscriptGenerator {
-            buffer: String::new(),
-        };
-        _self.buffer += "highlight clear\n";
-        _self
+    fn newline(&mut self) {
+        self.buffer += "\n";
     }
 }
 
@@ -39,17 +42,22 @@ fn highlight(options: &VimHighlight) -> String {
         return String::new();
     }
 
+    // TODO: Will need to use execute here (maybe create a vimscript function)
     format!("highlight {}{}{}{}\n", options.group, guibg, guifg, gui)
 }
 
-fn mk_option(option_type: &str, value: &str) -> String {
-    if value.is_empty() {
-        String::new()
+fn mk_option(option_type: &str, value: &Option<String>) -> String {
+    if let Some(option) = value {
+        format!(" {}={}", option_type, option)
     } else {
-        format!(" {}={}", option_type, value)
+        String::new()
     }
 }
 
 fn link(group: &str, target: &str) -> String {
     format!("highlight! link {} {}\n", group, target)
+}
+
+fn create_variable(name: String, color: String) -> String {
+    format!("let s:{} = '{}'\n", name, color)
 }

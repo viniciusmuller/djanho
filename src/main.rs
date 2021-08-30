@@ -1,11 +1,10 @@
-use std::fs::File;
-use std::io::Write;
-
+use std::{fs::File, io::Write};
 use clap::{App, Arg};
 
 use djanho::{decoder, generators};
 
 fn main() {
+    // TODO: Maybe use clap create_app macro
     let matches = App::new("Djanho")
         .version("0.1")
         .author("Vinícius Müller <vinigm.nho@gmail.com>")

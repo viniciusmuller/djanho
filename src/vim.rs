@@ -1,7 +1,7 @@
 /// A tuple containing (VSCode Token, Vim target highlight, fallback group)
 type VSCodeToken = (&'static str, &'static str, Option<&'static str>);
 /// A tuple containing (Vim target, VSCode UI FG, VSCode UI BG, Opacity)
-type VSCodeColor = (
+pub type VSCodeColor = (
     &'static str,
     Option<&'static str>,
     Option<&'static str>,
@@ -41,8 +41,8 @@ pub fn highlights() -> Highlight {
             ("keyword.operator", "Operator", None),
             ("operator", "Operator", None),
             ("label", "Label", None),
-            ("keyword.control", "Conditional", None),
-            ("conditional", "Conditional", None),
+            // ("keyword.control", "Conditional", None),
+            ("conditional", "Conditional", Some("Operator")),
             ("keyword.control.conditional", "Conditional", None),
             ("struct", "Structure", None),
             ("enum", "Structure", None),
@@ -66,11 +66,11 @@ pub fn highlights() -> Highlight {
             // -- TSInclude            { };    -- For includes: `#include` in C, `use` or `extern crate` in Rust, or `require` in Lua.
             ("keyword.declaration", "TSKeywordFunction", None),
             ("method", "TSMethod", None),
-            ("namespace", "TSNamespace", None),
+            ("namespace", "TSNamespace", Some("TSType")),
             // -- TSNone               { };    -- TODO: docs
             ("property", "TSField", None),
             ("parameter", "TSParameter", None),
-            // -- TSRepeat             { };    -- For keywords related to loops.
+            ("keyword.control", "TSRepeat", Some("Conditional")),
             ("regex", "TSStringRegex", None),
             // -- TSStringEscape       { };    -- For escape characters within a string.
             // -- TSSymbol             { };    -- For identifiers referring to symbols or atoms.
@@ -91,87 +91,87 @@ pub fn highlights() -> Highlight {
         colors: vec![
             (
                 "StatusLine",
-                Some("statusBar.foreground"),
                 Some("statusBar.background"),
+                Some("statusBar.foreground"),
                 1.0,
             ),
             (
                 "WildMenu",
-                Some("editor.foreground"),
                 Some("editor.background"),
+                Some("editor.foreground"),
                 0.7,
             ),
             // Popup menu
             (
                 "Pmenu",
-                Some("editor.foreground"),
                 Some("editor.background"),
+                Some("editor.foreground"),
                 0.8,
             ),
             (
                 "PmenuSel",
-                Some("tab.activeBackground"),
                 Some("editor.foreground"),
+                Some("tab.activeBackground"),
                 1.0,
             ),
             (
                 "PmenuThumb",
-                Some("editor.foreground"),
                 Some("editor.background"),
+                Some("editor.foreground"),
                 1.0,
             ),
             // Diffs
             (
                 "DiffAdd",
-                None,
                 Some("diffEditor.insertedTextBackground"),
+                None,
                 0.8,
             ),
             (
                 "DiffDelete",
-                None,
                 Some("diffEditor.removedTextBackground"),
+                None,
                 0.8,
             ),
             // Normal and visual modes
             (
                 "Normal",
-                Some("editor.foreground"),
                 Some("editor.background"),
+                Some("editor.foreground"),
                 1.0,
             ),
-            ("Visual", None, Some("editor.selectionBackground"), 0.5),
+            ("Visual", Some("editor.selectionBackground"), None, 0.5),
             // Misc
-            ("CursorLine", None, Some("editor.selectionBackground"), 0.4),
-            ("ColorColumn", None, Some("editor.selectionBackground"), 0.5),
-            ("SignColumn", None, Some("editor.background"), 1.0),
+            ("CursorLine", Some("editor.selectionBackground"), None, 0.4),
+            ("ColorColumn", Some("editor.selectionBackground"), None, 0.5),
+            ("SignColumn", Some("editor.background"), None, 1.0),
             (
                 "LineNr",
-                Some("editorLineNumber.foreground"),
                 Some("editorLineNumber.background"),
+                Some("editorLineNumber.foreground"),
                 1.0,
             ),
             // Tabs
             (
                 "TabLine",
-                Some("tab.inactiveForeground"),
                 Some("tab.inactiveBackground"),
+                Some("tab.inactiveForeground"),
                 1.0,
             ),
             (
                 "TabLineSel",
-                Some("tab.activeBackground"),
                 Some("tab.activeForeground"),
+                Some("tab.activeBackground"),
                 1.0,
             ),
             (
                 "TabLineFill",
-                Some("tab.inactiveForeground"),
                 Some("tab.inactiveBackground"),
+                Some("tab.inactiveForeground"),
                 1.0,
             ),
             // Treesitter
-            ("TSPunctDelimiter", Some("editor.foreground"), None, 1.0),
+            ("TSPunctDelimiter", None, Some("editor.foreground"), 1.0),
         ],
         links: vec![
             // Vim builtins
@@ -204,203 +204,28 @@ pub fn highlights() -> Highlight {
     }
 }
 
-// TODO: Remove this soon
-pub fn map_groups(group: &str) -> Option<&'static str> {
-    let result = match group {
-        // https://code.visualstudio.com/api/language-extensions/semantic-highlight-guide
-        // :help highlight-groups
-        "comment" => "Comment",
-        "constant" => "Constant",
-        "keyword" => "Keyword",
-        "string" => "String",
-        "invalid" => "Error",
-        "brace" => "parens",
+#[derive(Debug)]
+pub struct VimHighlight {
+    pub group: String,
+    pub background: Option<String>,
+    pub foreground: Option<String>,
+    pub text_style: Option<String>,
+}
 
-        "macro" => "Macro",
-        "entity.name.function.macro" => "Macro",
-
-        "number" => "Number",
-        "constant.numeric" => "Number",
-
-        "brackethighlighter.tag" => "MyTag",
-        "brackethighlighter.angle" => "MyTag",
-        "brackethighlighter.round" => "MyTag",
-        "brackethighlighter.square" => "MyTag",
-
-        "entity.name.function" => "Function",
-        "function" => "Function",
-
-        "keyword.operator" => "Operator",
-        "operator" => "Operator",
-
-        "label" => "Label",
-
-        "keyword.control" => "Conditional",
-        "conditional" => "Conditional",
-        "keyword.control.conditional" => "Conditional",
-
-        "struct" => "Structure",
-        "enum" => "Structure",
-        "variable" => "Identifier",
-        // Type
-        "type" => "Type",
-        "typeParameter" => "Type",
-        "entity.type.name" => "Type",
-        "entity.name.type" => "Type",
-        "meta.type.name" => "Type",
-        "storage" => "Type",
-
-        // -- TSAnnotation         { };    -- For C++/Dart attributes, annotations that can be attached to the code to denote some kind of meta information.
-        // -- TSAttribute          { };    -- (unstable) TODO: docs
-        // -- TSBoolean            { };    -- For booleans.
-        "constant.character" => "TSCharacter",
-        // -- TSConstructor        { };    -- For constructor calls and definitions: ` { }` in Lua, and Java constructors.
-        // -- TSConstMacro         { };    -- For constants that are defined by macros: `NULL` in C.
-        // -- TSError              { };    -- For syntax/parser errors.
-        // -- TSException          { };    -- For exception related keywords.
-        "function.defaultLibrary" => "TSFuncBuiltin",
-        // -- TSInclude            { };    -- For includes: `#include` in C, `use` or `extern crate` in Rust, or `require` in Lua.
-        "keyword.declaration" => "TSKeywordFunction",
-        "method" => "TSMethod",
-        "namespace" => "TSNamespace",
-        // -- TSNone               { };    -- TODO: docs
-        "property" => "TSField",
-
-        "parameter" => "TSParameter",
-        // -- TSRepeat             { };    -- For keywords related to loops.
-        "regex" => "TSStringRegex",
-        // -- TSStringEscape       { };    -- For escape characters within a string.
-        // -- TSSymbol             { };    -- For identifiers referring to symbols or atoms.
-        "type.defaultLibrary" => "TSTypeBuiltin",
-        "variable.readonly.defaultLibrary" => "TSVariableBuiltin",
-        // -- TSText               { };    -- For strings considered text in a markup language.
-        // -- TSEmphasis           { };    -- For text to be represented with emphasis.
-        // -- TSUnderline          { };    -- For text to be represented with an underline.
-        // -- TSStrike             { };    -- For strikethrough text.
-        // -- TSTitle              { };    -- Text that is part of a title.
-        // -- TSLiteral            { };    -- Literal text.
-        // -- TSURI                { };    -- Any URI like a link or email.
-
-        // TODO: Add linking group fallback, eg: Keyword fallbacks to Conditional
-        _ => "NO_MATCH",
-    };
-
-    if result != "NO_MATCH" {
-        Some(result)
+pub fn map_font_styles(style: &Option<String>) -> Option<String> {
+    if let Some(style) = style {
+        let style = style.as_str();
+        let result = match style {
+            "italic" => Some("italic".to_string()),
+            "bold" => Some("bold".to_string()),
+            _ => None,
+        };
+        if result.is_some() {
+            result
+        } else {
+            None
+        }
     } else {
         None
     }
-}
-
-// TODO: Remove this soon
-pub fn combined_options() -> Vec<VimOption> {
-    vec![
-        mk_combined(
-            "StatusLine",
-            "statusBar.foreground",
-            "statusBar.background",
-            1.0,
-        ),
-        mk_combined("WildMenu", "editor.foreground", "editor.background", 0.7),
-        // Popup menu
-        mk_combined("Pmenu", "editor.foreground", "editor.background", 0.8),
-        mk_combined("PmenuSel", "tab.activeBackground", "editor.foreground", 1.0),
-        mk_combined("PmenuThumb", "editor.foreground", "editor.background", 1.0),
-        // Diffs
-        mk_combined(
-            "DiffAdd",
-            "VIM_NONE",
-            "diffEditor.insertedTextBackground",
-            0.8,
-        ),
-        mk_combined(
-            "DiffDelete",
-            "VIM_NONE",
-            "diffEditor.removedTextBackground",
-            0.8,
-        ),
-        // Normal and visual modes
-        mk_combined("Normal", "editor.foreground", "editor.background", 1.0),
-        mk_combined("Visual", "VIM_NONE", "editor.selectionBackground", 0.5),
-        // Misc
-        mk_combined("CursorLine", "VIM_NONE", "editor.selectionBackground", 0.4),
-        mk_combined("ColorColumn", "VIM_NONE", "editor.selectionBackground", 0.5),
-        mk_combined("SignColumn", "VIM_NONE", "editor.background", 1.0),
-        mk_combined(
-            "LineNr",
-            "editorLineNumber.foreground",
-            "editorLineNumber.background",
-            1.0,
-        ),
-        // Tabs
-        mk_combined(
-            "TabLine",
-            "tab.inactiveForeground",
-            "tab.inactiveBackground",
-            1.0,
-        ),
-        mk_combined(
-            "TabLineSel",
-            "tab.activeBackground",
-            "tab.activeForeground",
-            1.0,
-        ),
-        mk_combined(
-            "TabLineFill",
-            "tab.inactiveForeground",
-            "tab.inactiveBackground",
-            1.0,
-        ),
-        // GitSigns
-        // mk_combined(
-        //     "GitSignsAdd",
-        //     "editor.insertedTextForeground",
-        //     "editor.background",
-        //     1.0,
-        // ),
-        // mk_combined(
-        //     "GitSignsDelete",
-        //     "editor.deletedTextForeground",
-        //     "editor.background",
-        //     1.0,
-        // ),
-        // Treesitter
-        mk_combined("TSPunctDelimiter", "editor.foreground", "VIM_NONE", 1.0),
-    ]
-}
-
-fn mk_combined(
-    vim_group: &'static str,
-    foreground: &'static str,
-    background: &'static str,
-    color_scaler: f32,
-) -> VimOption {
-    VimOption {
-        vim_group,
-        combinator_foreground: foreground,
-        combinator_background: background,
-        color_scaler,
-    }
-}
-
-pub struct VimOption {
-    pub combinator_foreground: &'static str,
-    pub combinator_background: &'static str,
-    pub vim_group: &'static str,
-    pub color_scaler: f32,
-}
-
-#[derive(Debug)]
-pub struct CombinedOption {
-    pub vim_group: &'static str,
-    pub combinator_foreground: &'static str,
-    pub combinator_background: &'static str,
-}
-
-#[derive(Debug)]
-pub struct VimHighlight {
-    pub group: &'static str,
-    pub background: String,
-    pub foreground: String,
-    pub text_style: String,
 }
