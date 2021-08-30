@@ -22,7 +22,6 @@ pub fn highlights() -> Highlight {
         tokens: vec![
             ("comment", "Comment", None),
             ("macro", "Macro", Some("Function")),
-            ("comment", "Comment", None),
             ("constant", "Constant", None),
             ("keyword", "Keyword", None),
             ("string", "String", None),
@@ -38,8 +37,8 @@ pub fn highlights() -> Highlight {
             ("brackethighlighter.square", "MyTag", None),
             ("entity.name.function", "Function", None),
             ("function", "Function", None),
-            ("keyword.operator", "Operator", None),
-            ("operator", "Operator", None),
+            ("keyword.operator", "Operator", Some("Keyword")),
+            ("operator", "Operator", Some("Keyword")),
             ("label", "Label", None),
             // ("keyword.control", "Conditional", None),
             ("conditional", "Conditional", Some("Operator")),
@@ -68,9 +67,9 @@ pub fn highlights() -> Highlight {
             ("method", "TSMethod", None),
             ("namespace", "TSNamespace", Some("TSType")),
             // -- TSNone               { };    -- TODO: docs
-            ("property", "TSField", None),
-            ("parameter", "TSParameter", None),
-            ("keyword.control", "TSRepeat", Some("Conditional")),
+            ("property", "TSField", Some("Constant")),
+            ("parameter", "TSParameter", Some("Constant")),
+            ("keyword.control", "Repeat", Some("Conditional")),
             ("regex", "TSStringRegex", None),
             // -- TSStringEscape       { };    -- For escape characters within a string.
             // -- TSSymbol             { };    -- For identifiers referring to symbols or atoms.
@@ -178,7 +177,7 @@ pub fn highlights() -> Highlight {
             ("Folded", "Comment"),
             ("Whitespace", "Comment"),
             ("NonText", "Comment"),
-            ("CursorLineNr", "Function"),
+            ("CursorLineNr", "Identifier"),
             // Treesitter
             ("TSFuncMacro", "Macro"),
             ("TSFunction", "Function"),
@@ -199,6 +198,7 @@ pub fn highlights() -> Highlight {
             ("TSPunctSpecial", "TSPunctDelimiter"),
             ("TSTagDelimiter", "Type"),
             ("TSKeyword", "Keyword"),
+            ("TSRepeat", "Repeat"),
             ("TSConstBuiltin", "TSVariableBuiltin"),
         ],
     }

@@ -1,35 +1,17 @@
+use clap::{clap_app, App, Arg};
 use std::{fs::File, io::Write};
-use clap::{App, Arg};
 
 use djanho::{decoder, generators};
 
 fn main() {
-    // TODO: Maybe use clap create_app macro
-    let matches = App::new("Djanho")
-        .version("0.1")
-        .author("Vinícius Müller <vinigm.nho@gmail.com>")
-        .about("Convert VSCode's JSON themes to Vimscript/Lua themes")
-        .arg(
-            Arg::with_name("FILENAME")
-                .help("Sets the input file to use")
-                .required(true)
-                .index(1),
-        )
-        .arg(
-            Arg::with_name("OUTPUT")
-                .short("o")
-                .long("output")
-                .help("Sets the output file to use")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name("LUA_CONFIG")
-                .short("l")
-                .long("lua")
-                .required(false)
-                .help("Whether to output the file in lua"),
-        )
-        .get_matches();
+    let matches = clap_app!(myapp =>
+        (version: "0.1")
+        (author: "Vinícius Müller <vinigm.nho@gmail.com>")
+        (about: "Convert VSCode's JSON themes to Vimscript/Lua themes")
+        (@arg FILENAME: +required "Sets the input file to use")
+        (@arg OUTPUT: -o --output "Sets the output file to use")
+        (@arg LUA_CONFIG: -l --lua "Whether to output the file in Lua")
+    ).get_matches();
 
     let has_lua = matches.is_present("LUA_CONFIG");
     let default_extension = if has_lua { "lua" } else { "vim" };
@@ -43,8 +25,7 @@ fn main() {
     let theme = decoder::parse_file(filepath.to_string());
     let generator = if has_lua {
         generators::generate_lua_config
-    }
-    else {
+    } else {
         generators::generate_vimscript_config
     };
 

@@ -74,7 +74,8 @@ where
                         foreground: fg_group,
                         text_style: theme_token.settings.font_style.clone(),
                     });
-                } else if let Some(fallback) = highlight_token.2 {
+                }
+                if let Some(fallback) = highlight_token.2 {
                     links.insert(highlight_token.1, fallback);
                 }
             } else if let Some(VSCodeScope::Multiple(scopes)) = &theme_token.scope {
@@ -93,9 +94,9 @@ where
                             foreground: fg_group,
                             text_style: theme_token.settings.font_style.clone(),
                         });
-                        if let Some(fallback) = highlight_token.2 {
-                            links.insert(highlight_token.1, fallback);
-                        }
+                    }
+                    if let Some(fallback) = highlight_token.2 {
+                        links.insert(highlight_token.1, fallback);
                     }
                 }
             }
