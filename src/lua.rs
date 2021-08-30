@@ -1,7 +1,7 @@
 use indoc::indoc;
 
-use crate::vim::map_font_styles;
-use crate::{generator::ConfigGenerator, vim::VimHighlight};
+use crate::highlights::map_font_styles;
+use crate::{generator::ConfigGenerator, highlights::VimHighlight};
 
 #[derive(Debug)]
 pub struct LuaGenerator {

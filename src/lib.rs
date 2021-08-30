@@ -1,6 +1,5 @@
 pub mod generators;
-pub mod vim;
-
+pub mod highlights;
 pub mod decoder;
 pub mod colors;
 pub mod generator;

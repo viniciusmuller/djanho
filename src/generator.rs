@@ -1,4 +1,4 @@
-use crate::vim::VimHighlight;
+use crate::highlights::VimHighlight;
 
 // Use this for Lua and Vimscript generators
 pub trait ConfigGenerator {

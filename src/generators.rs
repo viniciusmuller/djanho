@@ -5,7 +5,7 @@ use crate::{
     decoder::{self, VSCodeScope},
     generator::ConfigGenerator,
     lua::LuaGenerator,
-    vim::{self, VimHighlight},
+    highlights::{self, VimHighlight},
     vimscript::VimscriptGenerator,
 };
 use std::collections::HashMap;
@@ -47,7 +47,7 @@ fn generate_config<T>(theme: decoder::VSCodeTheme, generator: &mut T)
 where
     T: ConfigGenerator,
 {
-    let highlights = vim::highlights();
+    let highlights = highlights::highlights();
     let mut used_colors: UsedColors = HashMap::new();
     let mut parsed_highlights: Vec<VimHighlight> = Vec::new();
     let mut links: HashMap<&str, &str> = highlights.links.into_iter().collect();
