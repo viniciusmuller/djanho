@@ -1,12 +1,7 @@
 /// A tuple containing (VSCode Token, Vim target highlight, fallback group)
 type VSCodeToken = (&'static str, &'static str, Option<&'static str>);
-/// A tuple containing (Vim target, VSCode UI FG, VSCode UI BG, Opacity)
-pub type VSCodeColor = (
-    &'static str,
-    Option<&'static str>,
-    Option<&'static str>,
-    f32,
-);
+/// A tuple containing (Vim target, VSCode UI FG, VSCode UI BG)
+pub type VSCodeColor = (&'static str, Option<&'static str>, Option<&'static str>);
 /// A tuple containing (Vim target group, Vim source group)
 type VimLink = (&'static str, &'static str);
 
@@ -40,7 +35,7 @@ pub fn highlights() -> Highlight {
             ("keyword.operator", "Operator", Some("Keyword")),
             ("operator", "Operator", Some("Keyword")),
             ("label", "Label", None),
-            // ("keyword.control", "Conditional", None),
+            ("keyword.control", "Conditional", None),
             ("conditional", "Conditional", Some("Operator")),
             ("keyword.control.conditional", "Conditional", None),
             ("struct", "Structure", None),
@@ -54,7 +49,7 @@ pub fn highlights() -> Highlight {
             ("meta.type.name", "Type", None),
             ("storage", "Type", None),
             // -- TSAnnotation         { };    -- For C++/Dart attributes, annotations that can be attached to the code to denote some kind of meta information.
-            // -- TSAttribute          { };    -- (unstable) TODO: docs
+            // -- TSAttribute          { };    -- (unstable)
             // -- TSBoolean            { };    -- For booleans.
             ("constant.character", "TSCharacter", None),
             // -- TSConstructor        { };    -- For constructor calls and definitions: ` { }` in Lua, and Java constructors.
@@ -66,7 +61,7 @@ pub fn highlights() -> Highlight {
             ("keyword.declaration", "TSKeywordFunction", None),
             ("method", "TSMethod", None),
             ("namespace", "TSNamespace", Some("TSType")),
-            // -- TSNone               { };    -- TODO: docs
+            // -- TSNone               { };
             ("property", "TSField", Some("Constant")),
             ("parameter", "TSParameter", Some("Constant")),
             ("keyword.control", "Repeat", Some("Conditional")),
@@ -92,85 +87,65 @@ pub fn highlights() -> Highlight {
                 "StatusLine",
                 Some("statusBar.background"),
                 Some("statusBar.foreground"),
-                1.0,
             ),
             (
                 "WildMenu",
                 Some("editor.background"),
                 Some("editor.foreground"),
-                0.7,
             ),
             // Popup menu
             (
                 "Pmenu",
                 Some("editor.background"),
                 Some("editor.foreground"),
-                0.8,
             ),
             (
                 "PmenuSel",
                 Some("editor.foreground"),
                 Some("tab.activeBackground"),
-                1.0,
             ),
             (
                 "PmenuThumb",
                 Some("editor.background"),
                 Some("editor.foreground"),
-                1.0,
             ),
             // Diffs
-            (
-                "DiffAdd",
-                Some("diffEditor.insertedTextBackground"),
-                None,
-                0.8,
-            ),
-            (
-                "DiffDelete",
-                Some("diffEditor.removedTextBackground"),
-                None,
-                0.8,
-            ),
+            ("DiffAdd", Some("diffEditor.insertedTextBackground"), None),
+            ("DiffDelete", Some("diffEditor.removedTextBackground"), None),
             // Normal and visual modes
             (
                 "Normal",
                 Some("editor.background"),
                 Some("editor.foreground"),
-                1.0,
             ),
-            ("Visual", Some("editor.selectionBackground"), None, 0.5),
+            ("Visual", Some("editor.selectionBackground"), None),
             // Misc
-            ("CursorLine", Some("editor.selectionBackground"), None, 0.4),
-            ("ColorColumn", Some("editor.selectionBackground"), None, 0.5),
-            ("SignColumn", Some("editor.background"), None, 1.0),
+            ("CursorLine", Some("editor.selectionBackground"), None),
+            ("ColorColumn", Some("editor.selectionBackground"), None),
+            ("SignColumn", Some("editor.background"), None),
             (
                 "LineNr",
                 Some("editorLineNumber.background"),
                 Some("editorLineNumber.foreground"),
-                1.0,
             ),
             // Tabs
             (
                 "TabLine",
                 Some("tab.inactiveBackground"),
                 Some("tab.inactiveForeground"),
-                1.0,
             ),
             (
                 "TabLineSel",
                 Some("tab.activeForeground"),
                 Some("tab.activeBackground"),
-                1.0,
             ),
             (
                 "TabLineFill",
                 Some("tab.inactiveBackground"),
                 Some("tab.inactiveForeground"),
-                1.0,
             ),
             // Treesitter
-            ("TSPunctDelimiter", None, Some("editor.foreground"), 1.0),
+            ("TSPunctDelimiter", None, Some("editor.foreground")),
         ],
         links: vec![
             // Vim builtins
@@ -183,7 +158,7 @@ pub fn highlights() -> Highlight {
             ("TSFunction", "Function"),
             ("TSType", "Type"),
             ("TSLabel", "Type"),
-            ("TSVariable", "Variable"),
+            ("TSVariable", "Identifier"),
             ("TSComment", "Comment"),
             ("TSProperty", "TSField"),
             ("TSParameterReference", "TSParameter"),

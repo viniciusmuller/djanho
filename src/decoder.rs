@@ -13,9 +13,6 @@ pub fn parse_file(filepath: String) -> VSCodeTheme {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct VSCodeTheme {
-    pub name: Option<String>, // TODO: Use default names for those
-    #[serde(rename = "type")]
-    pub type_: Option<String>,
     #[serde(rename = "tokenColors")]
     pub tokens: Vec<VSCodeHighlight>,
     pub colors: Option<HashMap<String, String>>,

@@ -207,7 +207,6 @@ fn parse_color(color: String, bg_color: colors::RGBA, scaler: f32) -> String {
 
     // If the color is RGBA, we blend it with the background
     if let Ok(colors::RGBA { r, g, b, a }) = colors::from_hex_string(color.as_str()) {
-        // TODO: Use opacity here
         let mut color = colors::blend(bg_color, colors::RGBA { r, g, b, a });
         colors::scale(&mut color, scaler);
         colors::to_rgb_hex_string(color)

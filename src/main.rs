@@ -1,4 +1,4 @@
-use clap::{clap_app, App, Arg};
+use clap::clap_app;
 use std::{fs::File, io::Write};
 
 use djanho::{decoder, generators};
@@ -11,7 +11,8 @@ fn main() {
         (@arg FILENAME: +required "Sets the input file to use")
         (@arg OUTPUT: -o --output "Sets the output file to use")
         (@arg LUA_CONFIG: -l --lua "Whether to output the file in Lua")
-    ).get_matches();
+    )
+    .get_matches();
 
     let has_lua = matches.is_present("LUA_CONFIG");
     let default_extension = if has_lua { "lua" } else { "vim" };
