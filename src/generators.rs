@@ -13,6 +13,18 @@ use std::collections::HashMap;
 /// HashMap containing hex colors as keys, generated highlight groups as values
 type UsedColors = HashMap<String, String>;
 
+macro_rules! map_scopes {
+    ($t:expr, $f:expr) => {
+        if let Some(VSCodeScope::Single(scope)) = $t {
+            $f(scope);
+        } else if let Some(VSCodeScope::Multiple(scopes)) = $t {
+            for scope in scopes {
+                $f(scope)
+            }
+        }
+    };
+}
+
 pub fn generate_vimscript_config(theme: decoder::VSCodeTheme) -> String {
     // TODO: Maybe find a way to have kind of a trait-generic variable to store
     // the generator struct
@@ -47,6 +59,7 @@ where
         a: 1.0,
     };
 
+    // Find the background color
     if let Some(colors) = &theme.colors {
         for (option, color) in colors {
             if option == "editor.background" {
@@ -57,9 +70,10 @@ where
         }
     }
 
+    // Parse token highlight colors
     for theme_token in &theme.tokens {
         for highlight_token in &highlights.tokens {
-            if let Some(VSCodeScope::Single(scope)) = &theme_token.scope {
+            map_scopes!(&theme_token.scope, |scope| {
                 if highlight_token.0 == scope {
                     let (bg_group, fg_group) = parse_differences_and_add_to_hashmap(
                         &mut used_colors,
@@ -78,31 +92,11 @@ where
                 if let Some(fallback) = highlight_token.2 {
                     links.insert(highlight_token.1, fallback);
                 }
-            } else if let Some(VSCodeScope::Multiple(scopes)) = &theme_token.scope {
-                for scope in scopes {
-                    if highlight_token.0 == scope {
-                        let (bg_group, fg_group) = parse_differences_and_add_to_hashmap(
-                            &mut used_colors,
-                            &mut color_index,
-                            &theme_token.settings.background,
-                            &theme_token.settings.foreground,
-                            background_color,
-                        );
-                        parsed_highlights.push(VimHighlight {
-                            group: highlight_token.1.to_string(),
-                            background: bg_group,
-                            foreground: fg_group,
-                            text_style: theme_token.settings.font_style.clone(),
-                        });
-                    }
-                    if let Some(fallback) = highlight_token.2 {
-                        links.insert(highlight_token.1, fallback);
-                    }
-                }
-            }
+            });
         }
     }
 
+    // Parse UI colors
     if let Some(colors) = &theme.colors {
         for highlight_color in &highlights.colors {
             let (mut background, mut foreground) = (None, None);
