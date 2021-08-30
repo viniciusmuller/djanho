@@ -18,17 +18,16 @@ impl Default for LuaGenerator {
         _self.buffer += indoc! {"
             vim.cmd[[highlight clear]]
 
-            local highlight = function(group, bg, fg, attr, sp)
+            local highlight = function(group, bg, fg, attr)
                 fg = fg and 'guifg=' .. fg or ''
                 bg = bg and 'guibg=' .. bg or ''
                 attr = attr and 'gui=' .. attr or ''
-                sp = sp and 'guisp=' .. sp or ''
 
-                vim.api.nvim_command('highlight ' .. group .. ' '.. fg .. ' ' .. bg .. ' '.. attr .. ' ' .. sp)
+                vim.api.nvim_command('highlight ' .. group .. ' '.. fg .. ' ' .. bg .. ' '.. attr)
             end
 
             local link = function(target, group)
-                vim.api.nvim_command('highlight link ' .. target .. ' '.. group)
+                vim.api.nvim_command('highlight! link ' .. target .. ' '.. group)
             end\n"
         };
         _self

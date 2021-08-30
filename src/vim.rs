@@ -158,7 +158,7 @@ pub fn highlights() -> Highlight {
             ("TSFunction", "Function"),
             ("TSType", "Type"),
             ("TSLabel", "Type"),
-            ("TSVariable", "Identifier"),
+            // ("TSVariable", "Identifier"),
             ("TSComment", "Comment"),
             ("TSProperty", "TSField"),
             ("TSParameterReference", "TSParameter"),

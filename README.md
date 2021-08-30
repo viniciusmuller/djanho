@@ -5,16 +5,16 @@ colorschemes.
 - Handling of VSCode RGBA colors
 - Out of the box conversion
 - Outputs to both Lua and Vimscript
+- Tree-sitter support
 
 ## TODO
-- Treesitter support
-- Other plugins support
+- Support other plugins than tree-sitter
 
 ## Demo
 The colorschemes below were converted directly from VSCode's .json theme files.
 Dracula                    |  Solarized Dark           | Gruvbox Dark
 :-------------------------:|:-------------------------:|:-------------------------
-![](./images/dracula-converted.png) | ![](./images/solarized-dark-converted.png) | ![](./images/gruvbox-dark-converted.png)
+![](./images/dracula_generated.png) | ![](./images/solarized_dark_generated.png) | ![](./images/gruvbox_dark_generated.png)
 
 ## Building
 ```bash
@@ -37,9 +37,6 @@ djanho --help
     ```bash
     hson -j file.json > file.json
     ```
-- Language-specific support is not so good, since most languages creates a lot of
-    specific highlight groups, this program does not target them. Hopefully
-    treesitter support will improve this.
 
 ## Contributing
 Feel free to open an issue or a pull request in order to fix bugs, improve
