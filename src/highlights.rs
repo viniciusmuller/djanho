@@ -153,6 +153,7 @@ pub fn highlights() -> Highlight {
             ("Whitespace", "Comment"),
             ("NonText", "Comment"),
             ("CursorLineNr", "Identifier"),
+
             // Treesitter
             ("TSFuncMacro", "Macro"),
             ("TSFunction", "Function"),
@@ -175,6 +176,9 @@ pub fn highlights() -> Highlight {
             ("TSKeyword", "Keyword"),
             ("TSRepeat", "Repeat"),
             ("TSConstBuiltin", "TSVariableBuiltin"),
+
+            // Telescope
+            ("TelescopeNormal", "Normal")
         ],
     }
 }
