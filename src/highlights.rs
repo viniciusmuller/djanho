@@ -85,8 +85,8 @@ pub fn highlights() -> Highlight {
         colors: vec![
             (
                 "StatusLine",
-                Some("statusBar.background"),
                 Some("statusBar.foreground"),
+                Some("statusBar.background"),
             ),
             (
                 "WildMenu",
