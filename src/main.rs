@@ -1,7 +1,10 @@
 use clap::clap_app;
 use std::{fs::File, io::Write};
 
-use djanho::{decoder, generators};
+use djanho::{
+    decoder, generator::ConfigGenerator, generators, lua::LuaGenerator,
+    vimscript::VimscriptGenerator,
+};
 
 fn main() {
     let matches = clap_app!(myapp =>
@@ -24,13 +27,16 @@ fn main() {
         .unwrap_or_else(|| filename.as_str());
 
     let theme = decoder::parse_file(filepath.to_string());
-    let generator = if has_lua {
-        generators::generate_lua_config
-    } else {
-        generators::generate_vimscript_config
-    };
 
-    let config = generator(theme);
+    // Select generator and generate config
+    let mut generator: Box<dyn ConfigGenerator> = if has_lua {
+        Box::new(LuaGenerator::default())
+    } else {
+        Box::new(VimscriptGenerator::default())
+    };
+    generators::generate_config(theme, &mut generator);
+    let config = generator.collect();
+
     let mut f = File::create(output_path).expect("Unable to create file");
     f.write_all(config.as_bytes())
         .expect("Unable to write the generated config")

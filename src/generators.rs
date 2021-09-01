@@ -4,9 +4,7 @@ use crate::{
     colors,
     decoder::{self, VSCodeScope},
     generator::ConfigGenerator,
-    lua::LuaGenerator,
     highlights::{self, VimHighlight},
-    vimscript::VimscriptGenerator,
 };
 use std::collections::HashMap;
 
@@ -25,28 +23,11 @@ macro_rules! map_scopes {
     };
 }
 
-pub fn generate_vimscript_config(theme: decoder::VSCodeTheme) -> String {
-    // TODO: Maybe find a way to have kind of a trait-generic variable to store
-    // the generator struct
-    let mut generator = VimscriptGenerator::default();
-    generate_config(theme, &mut generator);
-    generator.collect()
-}
-
-pub fn generate_lua_config(theme: decoder::VSCodeTheme) -> String {
-    let mut generator = LuaGenerator::default();
-    generate_config(theme, &mut generator);
-    generator.collect()
-}
-
 fn create_group(idx: i32) -> String {
     format!("Color{}", idx)
 }
 
-fn generate_config<T>(theme: decoder::VSCodeTheme, generator: &mut T)
-where
-    T: ConfigGenerator,
-{
+pub fn generate_config(theme: decoder::VSCodeTheme, generator: &mut Box<dyn ConfigGenerator>) {
     let highlights = highlights::highlights();
     let mut used_colors: UsedColors = HashMap::new();
     let mut parsed_highlights: Vec<VimHighlight> = Vec::new();
