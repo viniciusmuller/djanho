@@ -23,7 +23,7 @@ cargo build --release
 
 ## Usage
 ```bash
-djanho vscode-theme.json
+./target/release/djanho vscode-theme.json
 ```
 To see all the available options, use
 ```bash
